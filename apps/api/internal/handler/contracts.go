@@ -941,3 +941,32 @@ func (h *Handler) StreamEvents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"events": resp})
 }
 
+// SearchContracts handles GET /api/v1/search?q=. It searches contracts by ID
+// or label (issue #159).
+func (h *Handler) SearchContracts(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+	limit := intQuery(r, "limit", 10)
+
+	contracts, err := h.Store.SearchContracts(r.Context(), q, limit)
+	if err != nil {
+		h.Logger.Error("search contracts", "err", err)
+		writeError(w, r, http.StatusInternalServerError, CodeInternal, "failed to search contracts")
+		return
+	}
+
+	res := make([]contractResponse, len(contracts))
+	for i, c := range contracts {
+		res[i] = contractResponse{
+			ID:                 c.ID,
+			Network:            c.Network,
+			Label:              c.Label,
+			WasmHash:           c.WasmHash,
+			CreatedAtLedger:    c.CreatedAtLedger,
+			BackfillCompleteAt: c.BackfillCompleteAt,
+			Status:             c.Status,
+			AddedAt:            c.AddedAt,
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"items": res})
+}

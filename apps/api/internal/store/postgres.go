@@ -30,12 +30,16 @@ func (s *postgresStore) UpsertLabel(ctx context.Context, label Label) error {
 
 func (s *postgresStore) ListLabels(ctx context.Context, workspaceID, query string) ([]Label, error) {
 	rows, err := s.pool.Query(ctx, `SELECT label, value, workspace_id, public FROM (SELECT label, value, '' AS workspace_id, TRUE AS public FROM labels_public UNION ALL SELECT label, value, workspace_id, FALSE AS public FROM labels_workspace WHERE workspace_id = $1) labels WHERE label ILIKE '%' || $2 || '%' OR value ILIKE '%' || $2 || '%' ORDER BY label LIMIT 100`, workspaceID, query)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 	var labels []Label
 	for rows.Next() {
 		var label Label
-		if err := rows.Scan(&label.Label, &label.Value, &label.WorkspaceID, &label.Public); err != nil { return nil, err }
+		if err := rows.Scan(&label.Label, &label.Value, &label.WorkspaceID, &label.Public); err != nil {
+			return nil, err
+		}
 		labels = append(labels, label)
 	}
 	return labels, rows.Err()
@@ -44,7 +48,9 @@ func (s *postgresStore) ListLabels(ctx context.Context, workspaceID, query strin
 func (s *postgresStore) ResolveLabel(ctx context.Context, workspaceID, query string) (Label, error) {
 	var label Label
 	err := s.pool.QueryRow(ctx, `SELECT label, value, workspace_id, public FROM (SELECT label, value, '' AS workspace_id, TRUE AS public, 2 AS priority FROM labels_public UNION ALL SELECT label, value, workspace_id, FALSE AS public, 1 AS priority FROM labels_workspace WHERE workspace_id = $1) labels WHERE lower(label) = lower($2) ORDER BY priority LIMIT 1`, workspaceID, query).Scan(&label.Label, &label.Value, &label.WorkspaceID, &label.Public)
-	if errors.Is(err, pgx.ErrNoRows) { return Label{}, ErrNotFound }
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Label{}, ErrNotFound
+	}
 	return label, err
 }
 

@@ -699,7 +699,7 @@ export function getGroup(id: string, userId: string): Promise<GroupDetail> {
 export function renameGroup(
   id: string,
   name: string,
-  userId: string,
+  userId: string
 ): Promise<Group> {
   return fetchJson<Group>(`${API_URL}/api/v1/groups/${id}`, {
     method: "PATCH",
@@ -710,7 +710,7 @@ export function renameGroup(
 
 export function deleteGroup(
   id: string,
-  userId: string,
+  userId: string
 ): Promise<GroupDeletedResponse> {
   return fetchJson<GroupDeletedResponse>(`${API_URL}/api/v1/groups/${id}`, {
     method: "DELETE",
@@ -718,10 +718,7 @@ export function deleteGroup(
   });
 }
 
-export function getGroupStats(
-  id: string,
-  userId: string,
-): Promise<GroupStats> {
+export function getGroupStats(id: string, userId: string): Promise<GroupStats> {
   return fetchJson<GroupStats>(`${API_URL}/api/v1/groups/${id}/stats`, {
     headers: { "X-User-ID": userId },
   });
@@ -730,7 +727,7 @@ export function getGroupStats(
 export function addContractToGroup(
   groupId: string,
   contractId: string,
-  userId: string,
+  userId: string
 ): Promise<GroupMembershipResponse> {
   return fetchJson<GroupMembershipResponse>(
     `${API_URL}/api/v1/groups/${groupId}/contracts`,
@@ -738,20 +735,20 @@ export function addContractToGroup(
       method: "POST",
       body: JSON.stringify({ contract_id: contractId }),
       headers: { "X-User-ID": userId },
-    },
+    }
   );
 }
 
 export function removeContractFromGroup(
   groupId: string,
   contractId: string,
-  userId: string,
+  userId: string
 ): Promise<GroupMembershipResponse> {
   return fetchJson<GroupMembershipResponse>(
     `${API_URL}/api/v1/groups/${groupId}/contracts/${contractId}`,
     {
       method: "DELETE",
       headers: { "X-User-ID": userId },
-    },
+    }
   );
 }
